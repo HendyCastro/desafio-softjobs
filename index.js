@@ -5,11 +5,13 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const app = express();
 
-const key = "claveSecreta";
+const key = process.env.JWT_SECRET; 
 app.use(cors());
 app.use(express.json());
 
-app.listen(3000, () => {
+const port = process.env.PORT || 3000;
+
+app.listen(port, () => {
     console.log("servidor iniciado en el puerto 3000");
 });
 
