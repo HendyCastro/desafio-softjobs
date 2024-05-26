@@ -5,9 +5,15 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const app = express();
 
+const registroDeRutas = (req,res,next) => {
+    const rutas = req.url
+    console.log(`Se registra peticion desde la ruta ${rutas}`)
+    next()
+}
 const key = process.env.JWT_SECRET; 
 app.use(cors());
 app.use(express.json());
+app.use(registroDeRutas)
 
 const port = process.env.PORT || 3000;
 
@@ -18,19 +24,19 @@ app.listen(port, () => {
 const verifyToken = (req, res, next) => {
     const authorizationHeader = req.headers["authorization"];
     if (!authorizationHeader) {
-        return res.status(401).json({ message: "No autorizado" });
+        return res.status(401).json({ message: "No autorizado " });
     }
     const [bearer, token] = authorizationHeader.split(" ");
 
     if (bearer !== "Bearer" || !token) {
-        return res.status(401).json({ message: "No autorizado" });    
+        return res.status(401).json({ message: "No autorizado " });    
     }
     try {
         jwt.verify(token, key)&&next();
         
     } catch (error) {
         console.log(error);
-        return res.status(401).json({ message: "No autorizado!!!" });
+        return res.status(401).json({ message: "No autorizado" });
     }
 };
 
@@ -67,7 +73,7 @@ app.post("/login", async (req, res) => {
          key
          
     );
-    res.status(200).json(token);
+    res.status(200).json({token});
    } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
@@ -81,7 +87,7 @@ app.get("/usuarios", verifyToken, async (req, res) => {
         const query = "SELECT * FROM usuarios WHERE email = $1;";
         const {email}= jwt.verify(token, key);
         const { rows } = await pool.query(query, [email]);
-        const user = rows[0];
+        const user = rows;
 
         if (!user) {
             return res.status(404).json({ message: "Usuario no encontrado" });
